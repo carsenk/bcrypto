@@ -16,12 +16,12 @@
 
 #if defined(EXHAUSTIVE_TEST_ORDER)
 #include "scalar_low_impl.h"
-#elif defined(USE_SCALAR_4X64)
+#elif defined(SECP256K1_WIDEMUL_INT128)
 #include "scalar_4x64_impl.h"
-#elif defined(USE_SCALAR_8X32)
+#elif defined(SECP256K1_WIDEMUL_INT64)
 #include "scalar_8x32_impl.h"
 #else
-#error "Please select scalar implementation"
+#error "Please select wide multiplication implementation"
 #endif
 
 static const secp256k1_scalar secp256k1_scalar_one = SECP256K1_SCALAR_CONST(0, 0, 0, 0, 0, 0, 0, 1);
@@ -253,7 +253,16 @@ static void secp256k1_scalar_inverse_var(secp256k1_scalar *r, const secp256k1_sc
 }
 
 #ifdef USE_ENDOMORPHISM
+/* These parameters are generated using sage/gen_exhaustive_groups.sage. */
 #if defined(EXHAUSTIVE_TEST_ORDER)
+#  if EXHAUSTIVE_TEST_ORDER == 13
+#    define EXHAUSTIVE_TEST_LAMBDA 9
+#  elif EXHAUSTIVE_TEST_ORDER == 199
+#    define EXHAUSTIVE_TEST_LAMBDA 92
+#  else
+#    error No known lambda for the specified exhaustive test group order.
+#  endif
+
 /**
  * Find k1 and k2 given k, such that k1 + k2 * lambda == k mod n; unlike in the
  * full case we don't bother making k1 and k2 be small, we just want them to be
